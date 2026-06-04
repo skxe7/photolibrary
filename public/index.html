@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Архів</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #f1f1f1;
+}
+
+.top {
+  height: 56px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+}
+
+.sidebar {
+  width: 200px;
+  background: white;
+  height: calc(100vh - 56px);
+  border-right: 1px solid #ddd;
+  padding: 10px;
+}
+
+.btn {
+  padding: 8px;
+  margin: 5px 0;
+  background: #eee;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #ddd;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #ddd;
+}
+
+.card img, .card video {
+  width: 100%;
+}
+
+.info {
+  padding: 8px;
+  font-size: 13px;
+  color: #333;
+}
+
+.type {
+  font-size: 11px;
+  color: gray;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">Архів нашої сім'ї</div>
+
+<div class="container">
+
+<div class="sidebar">
+  <div class="btn" onclick="filter('all')">Все</div>
+  <div class="btn" onclick="filter('2026')">2026</div>
+  <div class="btn" onclick="filter('2025')">2025</div>
+  <div class="btn" onclick="filter('photo')">Фото</div>
+  <div class="btn" onclick="filter('video')">Відео</div>
+
+  <hr>
+  <a href="upload.html">загрузить</a>
+</div>
+
+<div class="content">
+  <div class="grid" id="grid"></div>
+</div>
+
+</div>
+
+<script>
+let files = [];
+
+async function load() {
+  const res = await fetch("/files");
+  files = await res.json();
+  render("all");
+}
+
+function yearFrom(name) {
+  return new Date(parseInt(name.split("-")[0])).getFullYear().toString();
+}
+
+function isVideo(name) {
+  return ["mp4","webm","mov"].includes(name.split(".").pop().toLowerCase());
+}
+
+function render(mode) {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+
+  files.forEach(f => {
+    const year = yearFrom(f);
+    const video = isVideo(f);
+
+    if (mode !== "all") {
+      if (mode === "video" && !video) return;
+      if (mode === "photo" && video) return;
+      if (mode !== "video" && mode !== "photo" && year !== mode) return;
+    }
+
+    grid.innerHTML += `
+      <div class="card">
+        ${
+          video
+          ? `<video muted preload="metadata" onloadeddata="makePreview(this)"></video>`
+          : `<img src="/uploads/${f}">`
+        }
+        <div class="info">
+          ${f}
+          <div class="type">${video ? "video" : "photo"} • ${year}</div>
+        </div>
+      </div>
+    `;
+
+    if (video) {
+      const vid = document.querySelectorAll("video");
+      vid[vid.length - 1].src = "/uploads/" + f;
+    }
+  });
+}
+
+function makePreview(video) {
+  setTimeout(() => {
+    video.currentTime = 1;
+  }, 200);
+
+  video.addEventListener("seeked", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    const img = new Image();
+    img.src = canvas.toDataURL("image/jpeg");
+
+    video.parentElement.replaceChild(img, video);
+  }, { once: true });
+}
+
+function filter(m) {
+  render(m);
+}
+
+load();
+</script>
+
+</body>
+</html>
