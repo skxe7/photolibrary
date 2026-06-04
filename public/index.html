@@ -1,163 +1,187 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
-<meta charset="UTF-8">
-<title>archive redux</title>
-
-<style>
-<style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #fff;
-  color: #111;
-}
-
-/* top bar */
-.top {
-  height: 56px;
-  border-bottom: 1px solid #e6e6e6;
-  display: flex;
-  align-items: center;
-  padding: 0 18px;
-  font-weight: 600;
-  background: #fff;
-}
-
-/* layout */
-.wrap {
-  display: flex;
-}
-
-/* sidebar */
-.side {
-  width: 200px;
-  border-right: 1px solid #eee;
-  height: calc(100vh - 56px);
-  padding: 10px;
-}
-
-.btn {
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.btn:hover {
-  background: #f5f5f5;
-}
-
-/* content */
-.content {
-  flex: 1;
-  padding: 16px;
-}
-
-/* GRID как Google Photos */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 4px;
-}
-
-/* карточки БЕЗ тени */
-.card {
-  background: #fff;
-  overflow: hidden;
-}
-
-/* плитки */
-.card img,
-.card video {
-  width: 100%;
-  display: block;
-  object-fit: cover;
-}
-
-/* подпись минимальная */
-.info {
-  font-size: 11px;
-  padding: 4px 2px;
-  color: #666;
-}
-</style>
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>сімейний архів</title>
+  <style>
+    body{
+      margin:0;
+      font-family: system-ui, Arial, sans-serif;
+      background:#fff;
+      color:#111;
+    }
+    .top{
+      height:56px;
+      display:flex;
+      align-items:center;
+      padding:0 18px;
+      border-bottom:1px solid #eee;
+      font-size:20px;
+      font-weight:800;
+      letter-spacing:.3px;
+    }
+    .wrap{
+      display:flex;
+    }
+    .side{
+      width:220px;
+      border-right:1px solid #f1f1f1;
+      padding:12px;
+      min-height: calc(100vh - 56px);
+      box-sizing:border-box;
+    }
+    .side-title{
+      font-size:28px;
+      font-weight:900;
+      line-height:1;
+      margin-bottom:14px;
+      text-transform:uppercase;
+    }
+    .btn{
+      padding:10px 12px;
+      margin:6px 0;
+      cursor:pointer;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:600;
+    }
+    .btn:hover{
+      background:#f6f6f6;
+    }
+    .upload-link{
+      display:inline-block;
+      margin-top:10px;
+      text-decoration:none;
+      color:#0b57d0;
+      font-weight:700;
+      font-size:15px;
+    }
+    .content{
+      flex:1;
+      padding:14px;
+    }
+    .year-block{
+      margin-bottom:28px;
+    }
+    .year-title{
+      font-size:34px;
+      font-weight:900;
+      margin:6px 0 12px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+    .sub-title{
+      font-size:14px;
+      color:#666;
+      margin-bottom:10px;
+      font-weight:700;
+      text-transform:uppercase;
+    }
+    .grid{
+      column-count: 5;
+      column-gap: 8px;
+    }
+    @media (max-width: 1200px){ .grid{ column-count:4; } }
+    @media (max-width: 900px){ .grid{ column-count:3; } .side{ width:180px; } }
+    @media (max-width: 650px){ .grid{ column-count:2; } .wrap{ flex-direction:column; } .side{ width:100%; min-height:auto; } }
+    .card{
+      break-inside: avoid;
+      margin-bottom:8px;
+      border-radius:12px;
+      overflow:hidden;
+      background:#fafafa;
+    }
+    .card img, .card video{
+      width:100%;
+      display:block;
+      border-radius:12px;
+    }
+    .info{
+      padding:6px 4px 2px;
+      font-size:12px;
+      color:#666;
+      word-break: break-word;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="top">сімейний архів</div>
 
-<div class="top">📼 archive redux</div>
+  <div class="wrap">
+    <div class="side">
+      <div class="side-title">роки</div>
+      <div class="btn" onclick="showAll()">усе</div>
+      <div id="years"></div>
+      <a class="upload-link" href="upload.html">завантажити</a>
+    </div>
 
-<div class="wrap">
+    <div class="content">
+      <div id="content"></div>
+    </div>
+  </div>
 
-<div class="side">
-  <div class="btn" onclick="filter('all')">all</div>
-  <div class="btn" onclick="filter('2026')">2026</div>
-  <div class="btn" onclick="filter('2025')">2025</div>
-  <div class="btn" onclick="filter('photo')">photos</div>
-  <div class="btn" onclick="filter('video')">videos</div>
+  <script>
+    let data = [];
 
-  <a href="upload.html">upload</a>
-</div>
-
-<div class="content">
-  <div class="grid" id="grid"></div>
-</div>
-
-</div>
-
-<script>
-let data = [];
-
-async function load() {
-  const res = await fetch("/files");
-  data = await res.json();
-  render("all");
-}
-
-function isVideo(f) {
-  return ["mp4","webm","mov"].includes(f.file.split(".").pop());
-}
-
-function render(mode) {
-  const g = document.getElementById("grid");
-  g.innerHTML = "";
-
-  data.forEach(item => {
-    const video = isVideo(item);
-
-    if (mode !== "all") {
-      if (mode === "video" && !video) return;
-      if (mode === "photo" && video) return;
-      if (mode !== "video" && mode !== "photo" && item.year !== mode) return;
+    function isVideo(file){
+      return ["mp4","webm","mov","m4v"].includes(file.split(".").pop().toLowerCase());
     }
 
-    g.innerHTML += `
-      <div class="card">
-        ${
-          video
-          ? `<video src="/uploads/${item.file}" controls></video>`
-          : `<img src="/uploads/${item.file}">`
-        }
-        <div class="info">
-          ${item.file}
-          • ${item.year}
+    async function load(){
+      const res = await fetch("/files");
+      data = await res.json();
+
+      const years = [...new Set(data.map(x => x.year))]
+        .filter(Boolean)
+        .sort((a,b) => b.localeCompare(a));
+
+      const yearsEl = document.getElementById("years");
+      yearsEl.innerHTML = years.map(y => `<div class="btn" onclick="showYear('${y}')">${y}</div>`).join("");
+
+      renderGroups(data);
+    }
+
+    function renderGroups(items){
+      const content = document.getElementById("content");
+      const grouped = {};
+
+      items.forEach(item => {
+        if (!grouped[item.year]) grouped[item.year] = [];
+        grouped[item.year].push(item);
+      });
+
+      const years = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
+
+      content.innerHTML = years.map(year => `
+        <div class="year-block">
+          <div class="year-title">${year}</div>
+          <div class="sub-title">фото та відео</div>
+          <div class="grid">
+            ${grouped[year].map(item => `
+              <div class="card">
+                ${
+                  isVideo(item.file)
+                    ? `<video src="/uploads/${item.file}" controls preload="metadata"></video>`
+                    : `<img src="/uploads/${item.file}" alt="">`
+                }
+                <div class="info">${item.file}</div>
+              </div>
+            `).join("")}
+          </div>
         </div>
-      </div>
-    `;
-  });
-}
+      `).join("");
+    }
 
-function filter(m) {
-  render(m);
-}
+    function showAll(){
+      renderGroups(data);
+    }
 
-load();
-</script>
+    function showYear(y){
+      renderGroups(data.filter(x => x.year === y));
+    }
 
-</body>
-</html>
+    load();
+  </script>
 </body>
 </html>
