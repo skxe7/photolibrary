@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
+const path = require("path");
 const ExifParser = require("exif-parser");
 
 const app = express();
@@ -9,54 +10,54 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static("public"));
 app.use("/uploads", express.static("uploads"));
 
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads"),
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
+  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_"))
 });
 
 const upload = multer({ storage });
 
-// upload
-app.post("/upload", upload.single("file"), (req, res) => {
-  res.json({ ok: true });
-});
+function getYearForFile(filename) {
+  const filePath = path.join("uploads", filename);
+  const ext = path.extname(filename).toLowerCase();
 
-// files + year detect
-app.get("/files", (req, res) => {
-  const files = fs.readdirSync("uploads");
+  try {
+    const stat = fs.statSync(filePath);
 
-  const result = files.map(f => {
-    const path = "uploads/" + f;
-
-    let year = "unknown";
-
-    try {
-      const buffer = fs.readFileSync(path);
+    if ([".jpg", ".jpeg", ".png", ".webp", ".heic"].includes(ext)) {
+      const buffer = fs.readFileSync(filePath);
       const parser = ExifParser.create(buffer);
       const exif = parser.parse();
 
-      if (exif && exif.tags && exif.tags.DateTimeOriginal) {
-        year = new Date(exif.tags.DateTimeOriginal * 1000)
-          .getFullYear()
-          .toString();
+      if (exif?.tags?.DateTimeOriginal) {
+        return new Date(exif.tags.DateTimeOriginal * 1000).getFullYear().toString();
       }
-    } catch (e) {
-      // если нет exif (видео/файлы) — fallback
-      year = new Date(parseInt(f.split("-")[0])).getFullYear().toString();
     }
 
-    return { file: f, year };
-  });
+    return new Date(stat.mtime).getFullYear().toString();
+  } catch {
+    return "невідомо";
+  }
+}
 
-  res.json(result);
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ ok: false });
+  res.json({ ok: true });
+});
+
+app.get("/files", (req, res) => {
+  const files = fs.readdirSync("uploads")
+    .map((file) => ({
+      file,
+      year: getYearForFile(file)
+    }))
+    .sort((a, b) => b.year.localeCompare(a.year) || b.file.localeCompare(a.file));
+
+  res.json(files);
 });
 
 app.listen(PORT, () => {
-  console.log("running " + PORT);
+  console.log("running on " + PORT);
 });
