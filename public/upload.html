@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>upload</title>
+</head>
+<body>
+
+<h2>загрузка фото/видео</h2>
+
+<input type="file" id="file">
+<button onclick="upload()">загрузить</button>
+
+<br><br>
+<a href="index.html">назад</a>
+
+<script>
+async function upload() {
+  const file = document.getElementById("file").files[0];
+
+  const fd = new FormData();
+  fd.append("file", file);
+
+  await fetch("/upload", {
+    method: "POST",
+    body: fd
+  });
+
+  alert("готово");
+}
+</script>
+
+</body>
+</html>
