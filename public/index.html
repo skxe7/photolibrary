@@ -1,187 +1,352 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Архів</title>
-  <style>
-    body{
-      margin:0;
-      font-family: system-ui, Arial, sans-serif;
-      background:#fff;
-      color:#111;
-    }
-    .top{
-      height:56px;
-      display:flex;
-      align-items:center;
-      padding:0 18px;
-      border-bottom:1px solid #eee;
-      font-size:20px;
-      font-weight:800;
-      letter-spacing:.3px;
-    }
-    .wrap{
-      display:flex;
-    }
-    .side{
-      width:220px;
-      border-right:1px solid #f1f1f1;
-      padding:12px;
-      min-height: calc(100vh - 56px);
-      box-sizing:border-box;
-    }
-    .side-title{
-      font-size:28px;
-      font-weight:900;
-      line-height:1;
-      margin-bottom:14px;
-      text-transform:uppercase;
-    }
-    .btn{
-      padding:10px 12px;
-      margin:6px 0;
-      cursor:pointer;
-      border-radius:10px;
-      font-size:14px;
-      font-weight:600;
-    }
-    .btn:hover{
-      background:#f6f6f6;
-    }
-    .upload-link{
-      display:inline-block;
-      margin-top:10px;
-      text-decoration:none;
-      color:#0b57d0;
-      font-weight:700;
-      font-size:15px;
-    }
-    .content{
-      flex:1;
-      padding:14px;
-    }
-    .year-block{
-      margin-bottom:28px;
-    }
-    .year-title{
-      font-size:34px;
-      font-weight:900;
-      margin:6px 0 12px;
-      text-transform:uppercase;
-      letter-spacing:1px;
-    }
-    .sub-title{
-      font-size:14px;
-      color:#666;
-      margin-bottom:10px;
-      font-weight:700;
-      text-transform:uppercase;
-    }
-    .grid{
-      column-count: 5;
-      column-gap: 8px;
-    }
-    @media (max-width: 1200px){ .grid{ column-count:4; } }
-    @media (max-width: 900px){ .grid{ column-count:3; } .side{ width:180px; } }
-    @media (max-width: 650px){ .grid{ column-count:2; } .wrap{ flex-direction:column; } .side{ width:100%; min-height:auto; } }
-    .card{
-      break-inside: avoid;
-      margin-bottom:8px;
-      border-radius:12px;
-      overflow:hidden;
-      background:#fafafa;
-    }
-    .card img, .card video{
-      width:100%;
-      display:block;
-      border-radius:12px;
-    }
-    .info{
-      padding:6px 4px 2px;
-      font-size:12px;
-      color:#666;
-      word-break: break-word;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сімейний Архів</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-main: #222222;
+            --text-muted: #777777;
+            --accent: #4285f4;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        /* Шапка Google Photos 2014 */
+        header {
+            background-color: var(--card-bg);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+        }
+
+        .upload-btn {
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 2px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .upload-btn:hover {
+            background-color: #357ae8;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Контейнер */
+        .archive-container {
+            max-width: 1400px;
+            margin: 25px auto;
+            padding: 0 24px;
+        }
+
+        /* Секція Року */
+        .year-section {
+            margin-bottom: 45px;
+        }
+
+        .year-title {
+            font-size: 28px;
+            font-weight: 300;
+            color: var(--text-main);
+            margin: 0 0 16px 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        /* Сетка зображень */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 8px;
+        }
+
+        /* Картка */
+        .media-card {
+            background-color: #e0e0e0;
+            position: relative;
+            aspect-ratio: 1 / 1;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+
+        .media-card img, .media-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: opacity 0.2s;
+        }
+
+        .media-card:hover img, .media-card:hover video {
+            opacity: 0.9;
+        }
+
+        /* Плей маркер для відео */
+        .video-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.65);
+            color: #fff;
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ЛАЙТБОКС (Повноекранний перегляд) */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 85%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: #ffffff;
+            font-size: 35px;
+            cursor: pointer;
+            font-weight: 300;
+        }
+
+        /* Стрілки навігації */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 45px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 20px;
+            user-select: none;
+            font-weight: 300;
+        }
+        .nav-btn:hover { color: var(--accent); }
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+
+        .empty-message {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-top: 120px;
+        }
+    </style>
 </head>
 <body>
-  <div class="top">Сімейний архів</div>
 
-  <div class="wrap">
-    <div class="side">
-      <div class="side-title">Роки</div>
-      <div class="btn" onclick="showAll()">усе</div>
-      <div id="years"></div>
-      <a class="upload-link" href="upload.html">Завантажити</a>
+    <header>
+        <h1>Сімейний Архів</h1>
+        <a href="upload.html" class="upload-btn">Додати медіа</a>
+    </header>
+
+    <div class="archive-container" id="archive">
+        <div class="empty-message">Завантаження архіву...</div>
     </div>
 
-    <div class="content">
-      <div id="content"></div>
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="closeBox">&times;</span>
+        <button class="nav-btn prev-btn" id="prevBox">&#10094;</button>
+        <button class="nav-btn next-btn" id="nextBox">&#10095;</button>
+        <div id="lightboxMediaContainer"></div>
     </div>
-  </div>
 
-  <script>
-    let data = [];
+    <script>
+        let allMediaItems = []; 
+        let currentIndex = 0;
 
-    function isVideo(file){
-      return ["mp4","webm","mov","m4v"].includes(file.split(".").pop().toLowerCase());
-    }
+        async function loadArchive() {
+            const container = document.getElementById('archive');
+            
+            try {
+                const response = await fetch('/api/media');
+                const data = await response.json();
+                const years = Object.keys(data).sort((a, b) => b - a);
 
-    async function load(){
-      const res = await fetch("/files");
-      data = await res.json();
-
-      const years = [...new Set(data.map(x => x.year))]
-        .filter(Boolean)
-        .sort((a,b) => b.localeCompare(a));
-
-      const yearsEl = document.getElementById("years");
-      yearsEl.innerHTML = years.map(y => `<div class="btn" onclick="showYear('${y}')">${y}</div>`).join("");
-
-      renderGroups(data);
-    }
-
-    function renderGroups(items){
-      const content = document.getElementById("content");
-      const grouped = {};
-
-      items.forEach(item => {
-        if (!grouped[item.year]) grouped[item.year] = [];
-        grouped[item.year].push(item);
-      });
-
-      const years = Object.keys(grouped).sort((a,b) => b.localeCompare(a));
-
-      content.innerHTML = years.map(year => `
-        <div class="year-block">
-          <div class="year-title">${year}</div>
-          <div class="sub-title">фото та відео</div>
-          <div class="grid">
-            ${grouped[year].map(item => `
-              <div class="card">
-                ${
-                  isVideo(item.file)
-                    ? `<video src="/uploads/${item.file}" controls preload="metadata"></video>`
-                    : `<img src="/uploads/${item.file}" alt="">`
+                if (years.length === 0) {
+                    container.innerHTML = '<div class="empty-message">Архів порожній. Завантажте перші фото чи відео!</div>';
+                    return;
                 }
-                <div class="info">${item.file}</div>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-      `).join("");
-    }
 
-    function showAll(){
-      renderGroups(data);
-    }
+                container.innerHTML = '';
+                allMediaItems = []; // скидаємо прев'ю глобального списку
 
-    function showYear(y){
-      renderGroups(data.filter(x => x.year === y));
-    }
+                years.forEach(year => {
+                    const section = document.createElement('section');
+                    section.className = 'year-section';
 
-    load();
-  </script>
+                    const title = document.createElement('h2');
+                    title.className = 'year-title';
+                    title.textContent = `${year} рік`;
+                    section.appendChild(title);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'media-grid';
+
+                    data[year].forEach(item => {
+                        // Зберігаємо елемент у глобальний масив для гортання
+                        allMediaItems.push(item);
+                        const itemIndex = allMediaItems.length - 1;
+
+                        const card = document.createElement('div');
+                        card.className = 'media-card';
+                        card.onclick = () => openLightbox(itemIndex);
+
+                        if (item.type === 'photo') {
+                            const img = document.createElement('img');
+                            img.src = item.url;
+                            img.loading = 'lazy';
+                            card.appendChild(img);
+                        } else if (item.type === 'video') {
+                            const video = document.createElement('video');
+                            video.src = item.url;
+                            video.muted = true;
+                            video.preload = 'metadata';
+                            
+                            // Ефект живого прев'ю при наведенні
+                            card.onmouseenter = () => video.play().catch(()=>{});
+                            card.onmouseleave = () => { video.pause(); video.currentTime = 0; };
+
+                            const badge = document.createElement('span');
+                            badge.className = 'video-badge';
+                            badge.textContent = 'Відео';
+
+                            card.appendChild(video);
+                            card.appendChild(badge);
+                        }
+
+                        grid.appendChild(card);
+                    });
+
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                });
+
+            } catch (err) {
+                container.innerHTML = '<div class="empty-message">Помилка завантаження файлів з сервера.</div>';
+            }
+        }
+
+        // Логіка повноекранного плеєра
+        const lightbox = document.getElementById('lightbox');
+        const mediaContainer = document.getElementById('lightboxMediaContainer');
+
+        function openLightbox(index) {
+            currentIndex = index;
+            lightbox.classList.add('active');
+            renderLightboxItem();
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            mediaContainer.innerHTML = ''; // Вимикаємо плеєр
+        }
+
+        function renderLightboxItem() {
+            mediaContainer.innerHTML = '';
+            const item = allMediaItems[currentIndex];
+
+            if (item.type === 'photo') {
+                const img = document.createElement('img');
+                img.src = item.url;
+                img.className = 'lightbox-content';
+                mediaContainer.appendChild(img);
+            } else if (item.type === 'video') {
+                const video = document.createElement('video');
+                video.src = item.url;
+                video.className = 'lightbox-content';
+                video.controls = true;
+                video.autoplay = true;
+                mediaContainer.appendChild(video);
+            }
+        }
+
+        function nextItem() {
+            if (currentIndex < allMediaItems.length - 1) {
+                currentIndex++;
+                renderLightboxItem();
+            }
+        }
+
+        function prevItem() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderLightboxItem();
+            }
+        }
+
+        // Слухачі подій
+        document.getElementById('closeBox').onclick = closeLightbox;
+        document.getElementById('nextBox').onclick = (e) => { e.stopPropagation(); nextItem(); };
+        document.getElementById('prevBox').onclick = (e) => { e.stopPropagation(); prevItem(); };
+        lightbox.onclick = closeLightbox;
+
+        // Керування клавіатурою
+        window.onkeydown = (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextItem();
+            if (e.key === 'ArrowLeft') prevItem();
+        };
+
+        window.addEventListener('DOMContentLoaded', loadArchive);
+    </script>
 </body>
 </html>
