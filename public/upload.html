@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>завантаження</title>
+  <title>Завантаження</title>
   <style>
     body{
       font-family: system-ui, Arial, sans-serif;
@@ -45,19 +45,19 @@
   </style>
 </head>
 <body>
-  <div class="title">завантажити фото або відео</div>
+  <div class="title">Завантажити фото або відео</div>
   <div class="box">
     <input type="file" id="file" accept="image/*,video/*">
     <br>
-    <button onclick="upload()">завантажити</button>
+    <button onclick="upload()">Завантажити</button>
     <br>
-    <a href="index.html">назад</a>
+    <a href="index.html">Назад</a>
   </div>
 
   <script>
     async function upload(){
       const file = document.getElementById("file").files[0];
-      if (!file) return alert("оберіть файл");
+      if (!file) return alert("Оберіть файл");
 
       const fd = new FormData();
       fd.append("file", file);
@@ -71,7 +71,7 @@
         alert("готово");
         location.href = "index.html";
       } else {
-        alert("помилка завантаження");
+        alert("Помилка завантаження!");
       }
     }
   </script>
