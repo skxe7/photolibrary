@@ -1,79 +1,126 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Завантаження</title>
-  <style>
-    body{
-      font-family: system-ui, Arial, sans-serif;
-      background:#fff;
-      margin:0;
-      padding:24px;
-      color:#111;
-    }
-    .title{
-      font-size:32px;
-      font-weight:900;
-      text-transform:uppercase;
-      margin-bottom:18px;
-    }
-    .box{
-      max-width:520px;
-      padding:18px;
-      border:1px solid #eee;
-      border-radius:16px;
-      box-shadow:0 2px 10px rgba(0,0,0,.04);
-    }
-    button{
-      margin-top:14px;
-      padding:10px 16px;
-      border:0;
-      border-radius:10px;
-      background:#0b57d0;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-    }
-    a{
-      display:inline-block;
-      margin-top:16px;
-      color:#0b57d0;
-      text-decoration:none;
-      font-weight:700;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Додати медіа</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 60px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .upload-card {
+            background: white;
+            border-radius: 2px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+            max-width: 460px;
+            width: 100%;
+            padding: 35px;
+        }
+
+        h2 {
+            font-weight: 400;
+            margin-top: 0;
+            font-size: 24px;
+            color: #222;
+            letter-spacing: -0.5px;
+        }
+
+        .form-group {
+            margin: 25px 0;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: block;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .btn-submit:hover {
+            background-color: #357ae8;
+        }
+
+        .btn-submit:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #4285f4;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover { text-decoration: underline; }
+
+        /* Стан завантаження */
+        .status-message {
+            display: none;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #c27d00;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
-  <div class="title">Завантажити фото або відео</div>
-  <div class="box">
-    <input type="file" id="file" accept="image/*,video/*">
-    <br>
-    <button onclick="upload()">Завантажити</button>
-    <br>
-    <a href="index.html">Назад</a>
-  </div>
 
-  <script>
-    async function upload(){
-      const file = document.getElementById("file").files[0];
-      if (!file) return alert("Оберіть файл");
+    <div class="upload-card">
+        <h2>Завантажити спогади</h2>
+        
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Виберіть сімейні фото чи відео (можна декілька разом):</label>
+                <input type="file" name="media" accept="image/*,video/*" multiple required id="fileInput">
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn">Завантажити</button>
+        </form>
 
-      const fd = new FormData();
-      fd.append("file", file);
+        <div class="status-message" id="statusMsg">⏳ Обробка та надсилання файлів у хмару. Будь ласка, зачекайте...</div>
+        
+        <a href="/" class="back-link">← Назад до архіву</a>
+    </div>
 
-      const res = await fetch("/upload", {
-        method: "POST",
-        body: fd
-      });
+    <script>
+        const form = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMsg = document.getElementById('statusMsg');
+        const fileInput = document.getElementById('fileInput');
 
-      if (res.ok) {
-        alert("готово");
-        location.href = "index.html";
-      } else {
-        alert("Помилка завантаження!");
-      }
-    }
-  </script>
+        form.onsubmit = function() {
+            if(fileInput.files.length === 0) return false;
+            
+            // Блокуємо кнопку та показуємо статус, щоб користувач не перезавантажував сторінку
+            submitBtn.disabled = true;
+            statusMsg.style.display = 'block';
+            return true;
+        };
+    </script>
 </body>
 </html>
