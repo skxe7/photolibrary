@@ -1,34 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
-<meta charset="UTF-8">
-<title>upload</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>завантаження</title>
+  <style>
+    body{
+      font-family: system-ui, Arial, sans-serif;
+      background:#fff;
+      margin:0;
+      padding:24px;
+      color:#111;
+    }
+    .title{
+      font-size:32px;
+      font-weight:900;
+      text-transform:uppercase;
+      margin-bottom:18px;
+    }
+    .box{
+      max-width:520px;
+      padding:18px;
+      border:1px solid #eee;
+      border-radius:16px;
+      box-shadow:0 2px 10px rgba(0,0,0,.04);
+    }
+    button{
+      margin-top:14px;
+      padding:10px 16px;
+      border:0;
+      border-radius:10px;
+      background:#0b57d0;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    }
+    a{
+      display:inline-block;
+      margin-top:16px;
+      color:#0b57d0;
+      text-decoration:none;
+      font-weight:700;
+    }
+  </style>
 </head>
 <body>
+  <div class="title">завантажити фото або відео</div>
+  <div class="box">
+    <input type="file" id="file" accept="image/*,video/*">
+    <br>
+    <button onclick="upload()">завантажити</button>
+    <br>
+    <a href="index.html">назад</a>
+  </div>
 
-<h2>загрузка фото/видео</h2>
+  <script>
+    async function upload(){
+      const file = document.getElementById("file").files[0];
+      if (!file) return alert("оберіть файл");
 
-<input type="file" id="file">
-<button onclick="upload()">загрузить</button>
+      const fd = new FormData();
+      fd.append("file", file);
 
-<br><br>
-<a href="index.html">назад</a>
+      const res = await fetch("/upload", {
+        method: "POST",
+        body: fd
+      });
 
-<script>
-async function upload() {
-  const file = document.getElementById("file").files[0];
-
-  const fd = new FormData();
-  fd.append("file", file);
-
-  await fetch("/upload", {
-    method: "POST",
-    body: fd
-  });
-
-  alert("готово");
-}
-</script>
-
+      if (res.ok) {
+        alert("готово");
+        location.href = "index.html";
+      } else {
+        alert("помилка завантаження");
+      }
+    }
+  </script>
 </body>
 </html>
